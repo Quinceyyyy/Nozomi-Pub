@@ -1,13 +1,17 @@
 use tokio;
 use std::env;
 
-mod handle_ip;
-mod handle_scan;
-mod help;
+mod components;
+
+use components:: {
+    handle_ip,
+    handle_probing,
+    handle_scan,
+    help,
+};
 
 pub const START_PORT: u16 = 1;
 pub const END_PORT: u16 = 1024;
-
 
 #[derive(Debug, Default)]
 struct Data {
@@ -33,9 +37,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
         println!("{} is not a valide IP", data.ip_addr);
         return Ok(());
     }
+
     handle_scan::scan_ip(&mut data).await?;
-    for cur_port in data.open_ports {
-        println!("{}:{}", data.ip_addr, cur_port);
-    }
+    handle_probing::probe_ports(&mut data).await?;
+
     Ok(())
 }
